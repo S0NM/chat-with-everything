@@ -50,7 +50,7 @@ def main_page():
 
             with col2:
                 question = st.text_input(label="Ask me anything:",
-                                         value="Show me the best 5 prompts for Social Media Marketing ")
+                                         value="Summary the main content ")
                 if question != "":
                     with st.spinner("I'm thinking...wait a minute!"):
                         with st.container(border=True):

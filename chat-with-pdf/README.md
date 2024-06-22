@@ -1,7 +1,7 @@
 
-## 📚 Chat with PDF 
+# 📚 Chat with PDF 
 
-**Level**: Beginner 🎖️ 
+### **Level**: Beginner 🎖️ 
 
 ### 1. Our Goal 🎯
 
