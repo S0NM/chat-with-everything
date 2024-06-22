@@ -16,7 +16,8 @@ The technique of using Large Language Models (LLMs) to work with PDFs is very im
 - Langchain ([Working with PDF](https://python.langchain.com/v0.1/docs/modules/data_connection/document_loaders/pdf/))
 - [Some useful prompts to work with PDF](https://generativeai.pub/25-prompting-techniques-to-help-you-chat-with-pdf-like-a-pro-1524a2f52674)
 
-**Take a look at the following demo to understand what we will achieve :))**
+Take a look at the following demo to understand what we will achieve :)):
+
 ![chat-with-pdf](https://github.com/S0NM/chat-with-everything/blob/6cbc2a758b4b12d7e02f96fe38164440df1ef13c/gif/chat-with-pdf.gif)
 
 ### 2. How to get started?  🐌

@@ -34,3 +34,9 @@ pip install -r requirements.txt
 ```bash
 streamlit run app.py
 ```
+
+### 3. Demo
+
+Take a look at the following demo to understand what we will achieve in each app :))
+
+![chat-with-pdf](https://github.com/S0NM/chat-with-everything/blob/6cbc2a758b4b12d7e02f96fe38164440df1ef13c/gif/chat-with-pdf.gif)
