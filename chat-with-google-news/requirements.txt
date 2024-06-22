@@ -1,0 +1,6 @@
+langchain
+langchain-openai
+streamlit
+langchain-community
+gnews
+newspaper4k
