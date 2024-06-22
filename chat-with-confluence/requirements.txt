@@ -2,6 +2,4 @@ langchain
 langchain-openai
 streamlit
 langchain-community
-PyPDFLoader
-yt-dlp
-pydub
+atlassian-python-api
