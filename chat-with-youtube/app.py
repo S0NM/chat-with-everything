@@ -22,14 +22,15 @@ prompt = ChatPromptTemplate.from_messages(
 chain = prompt | llm | output_parser
 st.header("🎬 Chat with Youtube")
 
+if "content" not in st.session_state:
+    st.session_state.content = ""
 
 def main_page():
     url = st.text_input("Please enter your YouTube URL",
                         value='https://www.youtube.com/watch?v=x5-MuZvr0l4&ab_channel=FantasyStorytimeTales')
     clicked = st.button("Load Youtube Video", type="primary")
 
-    if "content" not in st.session_state:
-        st.session_state.content = ""
+
     if clicked:
         # download YouTube audio only and save into test.mp4 file
         save_dir = "./temp/"

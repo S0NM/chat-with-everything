@@ -5,3 +5,5 @@ langchain-community
 PyPDFLoader
 yt-dlp
 pydub
+atlassian-python-api
+newspaper4k

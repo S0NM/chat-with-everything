@@ -16,14 +16,18 @@ output_parser = StrOutputParser()
 prompt = ChatPromptTemplate.from_messages(
     [("system", "You are a very helpful assistant"),
      ("user",
-      "From my Pdf content:{content}. Please answer my question: {question}. If you don't find any related information, please answer:'There is no information you need in the content'")]
+      "Based on my Pdf content:{content}. Please answer my question: {question}. Please use the language that I used in the question")]
 )
 chain = prompt | llm | output_parser
-st.header("📗 Chat with PDF")
 
+if "content" not in st.session_state:
+    st.session_state.content = ""
 
 def main_page():
+    st.header("📗 Chat with PDF")
+
     uploaded_file = st.file_uploader("Choose a PDF", type="pdf")
+
     if uploaded_file is not None:
         temp_file = "./temp/temp.pdf"
         with open(temp_file, "wb") as f:
@@ -32,19 +36,27 @@ def main_page():
         # Get pdf content
         loader = PyPDFLoader(temp_file)
         pages = loader.load()
+
         content = ""
         for page in pages:
-            content = content + "\n --- \n" + page.page_content
+            content = content + "\n\n" + page.page_content
+        st.session_state.content = content
 
-        with st.expander("Check PDF full content!", expanded=False):
-            st.write(content)
+        if st.session_state.content != "":
+            col1, col2 = st.columns([4, 6])
+            with col1:
+                with st.expander("Check PDF Content:", expanded=True):
+                    st.write(st.session_state.content)
 
-        question = st.text_input(label="What is your question?")
-        if question != "":
-            with st.spinner("I'm thinking...wait a minute!"):
-                with st.container(border=True):
-                    response = chain.invoke({"content": content, "question": question})
-                    st.write(response)
+            with col2:
+                question = st.text_input(label="Ask me anything:",
+                                         value="Show me the best 5 prompts for Social Media Marketing ")
+                if question != "":
+                    with st.spinner("I'm thinking...wait a minute!"):
+                        with st.container(border=True):
+                            response = chain.invoke({"content": st.session_state.content, "question": question})
+                            st.write("Answer:")
+                            st.write(response)
 
 
 if __name__ == '__main__':

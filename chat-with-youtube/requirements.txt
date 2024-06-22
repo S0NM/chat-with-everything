@@ -1,6 +1,0 @@
-langchain
-langchain-openai
-streamlit
-langchain-community
-yt-dlp
-pydub

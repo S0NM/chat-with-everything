@@ -32,15 +32,15 @@ if "content" not in st.session_state:
 def main_page():
     # BASE_URL = https://yoursite.atlassian.com
     # Get SPACE_KEY in: https://yoursite.atlassian.com/wiki/spaces/<space_key>/pages/<page_id>
-    BASE_URL = st.text_input("Confluence URL", value="https://openbanking.atlassian.net")
-    SPACE_KEY = "DZ"
+    BASE_URL = st.text_input("Confluence URL", value="https://appfire.atlassian.net/")
+    SPACE_KEY = "CWP"
 
     clicked = st.button("Load Confluence Content",type="primary")
     if clicked:
         loader = ConfluenceLoader(
             url=BASE_URL,cloud=True,space_key=SPACE_KEY,
             username=USERNAME,api_key=CONFLUENCE_API_TOKEN,
-            limit=1, max_pages=1
+            limit=1, max_pages=10
         )
         pages = loader.load()
         content = ""
@@ -56,7 +56,7 @@ def main_page():
                 st.write(st.session_state.content)
 
         with col2:
-            question = st.text_input(label="Ask me anything:", value="Xin chào")
+            question = st.text_input(label="Ask me anything:", value="Summary the content")
             if question != "":
                 with st.spinner("I'm thinking...wait a minute!"):
                     with st.container(border=True):
