@@ -16,7 +16,7 @@ Confluence is a tool used as a wiki by many companies. If we consider Confluence
 
 Take a look at the following demo to understand what we will achieve :)):
 
-![chat-with-youtube](https://github.com/S0NM/chat-with-everything/blob/26afd07d1f5029f2ed504610d779fef3a896de11/gif/chat-with-youtube.gif)
+![chat-with-youtube](https://github.com/S0NM/chat-with-everything/blob/0df9d749d1628af62764de417f616c33bc5a42a6/gif/chat-with-confluence.gif)
 
 ### 2. How to get started?  🐌
 
