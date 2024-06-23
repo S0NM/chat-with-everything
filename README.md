@@ -1,9 +1,9 @@
 # 🍀 Chat with Everything
 
 ### ♥️ A Few Words from the Heart
-No one wants to be left out of the booming AI trend, and I am no exception. I dove into learning and soon became overwhelmed by a sea of technological knowledge. There is so much to learn, contemplate, and systematize.
+Nobody wants to be left out of the booming AI trend, and I am no different. I jumped into learning and was quickly overwhelmed by a sea of technological knowledge. There is so much to study.
 
-**"Chat with Everything"** is a series of practical exercises ranging from easy to difficult for those new to LLM apps. I write it based on my experiences from months of research and learning. I hope it will be useful for your journey!
+**"Chat with Everything"** is a series of practical exercises ranging from easy to difficult for individuals new to LLM apps. I wrote it based on my study and learning experiences over several months. I hope it is useful for your journey!
 
 Let's Get Started 💪💪💪
 
