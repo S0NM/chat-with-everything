@@ -16,7 +16,6 @@ OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 
 # Langchain Init
 llm = ChatOpenAI(api_key=OPENAI_API_KEY)
-llm.model_name="gpt-4-turbo"
 output_parser = StrOutputParser()
 prompt = ChatPromptTemplate.from_messages(
     [("system", "You are a very helpful assistant"),
