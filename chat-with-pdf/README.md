@@ -45,8 +45,20 @@ Run the Streamlit App (RAG Version)
 streamlit run app-rag.py
 ```
 
+### 3. Implementing RAG to build "Chat with PDF"
+Plese read my full article here: [Medium Link](https://medium.com/@elinson/lab-3-implementing-rag-to-build-a-chat-with-multiple-pdfs-app-88c1d7cd5d19)
 
-### 💰 3. Digging Deeper
+In this version, I've implemented the whole RAG process in 2 phases:
+
+**Phase 1 (Pre-processing):** Load external sources into our system
+
+![phase 1](https://miro.medium.com/v2/resize:fit:1400/format:webp/1*g0EDp-JlQWgygJzs064vzw.png)
+
+**Phase 2 (Inference):** Generate answer for your user’s query with the support of LLM
+
+![phase 2](https://miro.medium.com/v2/resize:fit:1400/format:webp/1*bHYLb-naJkzApseh8hB9mQ.png)
+
+### 💰 4. Digging Deeper
 
 If you want to challenge yourself, here are some ideas for you, guys:
 
