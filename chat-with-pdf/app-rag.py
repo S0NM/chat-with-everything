@@ -28,7 +28,6 @@ Based on the provided context only, find the best answer for my question. Format
 </context>
 Question:{input}
 """)
-# prompt2 = hub.pull("langchain-ai/rag-document-relevance")
 document_chain = create_stuff_documents_chain(llm, prompt)
 retriever = db.as_retriever()
 retriever_chain = create_retrieval_chain(retriever, document_chain)
