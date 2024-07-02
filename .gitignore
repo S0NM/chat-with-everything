@@ -1,3 +1,5 @@
 */.streamlit
 */temp
+*/chroma_db
 .*
+/chat-with-image/

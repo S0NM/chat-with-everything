@@ -1,8 +1,11 @@
+
 import streamlit as st
-from langchain_community.document_loaders import PyPDFLoader
 from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import PydanticOutputParser
+from langchain_core.pydantic_v1 import BaseModel, Field
+from typing import List
+import base64, httpx
 
 # Page setting
 st.set_page_config(layout="wide")
@@ -10,54 +13,73 @@ st.set_page_config(layout="wide")
 # Replace it with your OPENAI API KEY
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 
+
+class ProductDataExtractor(BaseModel):
+    product_name: str = Field(description="Product Name")
+    product_price: str = Field(description="Product Price with two decimal places")
+
+
+class InvoiceDataExtractor(BaseModel):
+    business_name: str = Field(description="Business Name")
+    business_address: str = Field(description="Business Address")
+    amount: float = Field(description="total amount with two decimals")
+    products: List[ProductDataExtractor] = Field(description="product list")
+
+
 # Init langchain
 llm = ChatOpenAI(api_key=OPENAI_API_KEY)
-output_parser = StrOutputParser()
-prompt = ChatPromptTemplate.from_messages(
-    [("system", "You are a very helpful assistant"),
-     ("user",
-      "Based on my Pdf content:{content}. Please answer my question: {question}. Please use the language that I used in the question")]
-)
-chain = prompt | llm | output_parser
+llm.model_name = "gpt-4o"
 
-if "content" not in st.session_state:
-    st.session_state.content = ""
+parser = PydanticOutputParser(pydantic_object=InvoiceDataExtractor)
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are an useful assistant. Wrap the output in `json` tags\n{format_instructions}"),
+    ("human", [
+        {"type": "text", "text": """{question}"""},
+        {
+            "type": "image_url",
+            "image_url": {"url": "data:image/jpeg;base64,{image_data}"},
+        },
+    ]),
+])
+
+
+chain = prompt | llm | parser
+
+if "action" not in st.session_state:
+    st.session_state.action = ""
+
 
 def main_page():
-    st.header("📗 Chat with PDF")
+    st.header("📗 Invoice Extractor")
 
-    uploaded_file = st.file_uploader("Choose a PDF", type="pdf")
+    url = st.text_input("Please enter your Invoice URL",
+                        value="https://marketplace.canva.com/EAFC1OcYOM0/2/0/1131w/canva-black-white-minimalist-simple-creative-freelancer-invoice-pyLVaYlAk1o.jpg")
+    clicked = st.button("Load Image", type="primary")
+    if clicked:
+        st.session_state.action = "SHOW_IMAGE"
 
-    if uploaded_file is not None:
-        temp_file = "./temp/temp.pdf"
-        with open(temp_file, "wb") as f:
-            f.write(uploaded_file.getvalue())
+    if st.session_state.action == "SHOW_IMAGE":
+        col1, col2 = st.columns([4, 6])
+        with col1:
+            with st.expander("Image:", expanded=True):
+                st.image(url, use_column_width=True)
 
-        # Get pdf content
-        loader = PyPDFLoader(temp_file)
-        pages = loader.load()
+        with col2:
+            extract_clicked = st.button("Extract Invoice Information", type="primary")
+            with st.expander("Parser Format Instruction:", expanded=True):
+                st.write(parser.get_format_instructions())
+            if extract_clicked:
+                with st.spinner("I'm thinking...wait a minute!"):
+                    with st.container(border=True):
+                        image_data = base64.b64encode(httpx.get(url).content).decode("utf-8")
+                        invoice = chain.invoke({"format_instructions":parser.get_format_instructions(),"question": "extract the content", "image_data": image_data})
 
-        content = ""
-        for page in pages:
-            content = content + "\n\n" + page.page_content
-        st.session_state.content = content
-
-        if st.session_state.content != "":
-            col1, col2 = st.columns([4, 6])
-            with col1:
-                with st.expander("Check PDF Content:", expanded=True):
-                    st.write(st.session_state.content)
-
-            with col2:
-                question = st.text_input(label="Ask me anything:",
-                                         value="Summary the main content ")
-                if question != "":
-                    with st.spinner("I'm thinking...wait a minute!"):
-                        with st.container(border=True):
-                            response = chain.invoke({"content": st.session_state.content, "question": question})
-                            st.write("Answer:")
-                            st.write(response)
-
+                        #Extract information from invoice object
+                        st.write(f"Business Name: {invoice.business_name}")
+                        st.write(f"Business Address: {invoice.business_address}")
+                        st.write(f"Total Amount: {invoice.amount}")
+                        for index, product in enumerate(invoice.products):
+                            st.write(f" Product:{index}: Name: {product.product_name} : Price : {product.product_price}")
 
 if __name__ == '__main__':
     main_page()

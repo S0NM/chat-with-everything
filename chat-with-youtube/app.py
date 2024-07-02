@@ -1,9 +1,9 @@
 import streamlit as st
-from langchain.document_loaders.generic import GenericLoader
 from langchain_openai import ChatOpenAI
 from langchain.document_loaders.parsers import OpenAIWhisperParser
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from langchain.document_loaders.generic import GenericLoader
 from langchain_community.document_loaders.blob_loaders.youtube_audio import YoutubeAudioLoader
 from youtube_transcript_api import YouTubeTranscriptApi
 from urllib.parse import urlparse, parse_qs

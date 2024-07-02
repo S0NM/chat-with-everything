@@ -7,3 +7,5 @@ yt-dlp
 pydub
 atlassian-python-api
 newspaper4k
+youtube-transcript-api
+chromadb
