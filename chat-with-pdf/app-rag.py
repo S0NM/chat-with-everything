@@ -22,12 +22,13 @@ db = Chroma(client=native_db, collection_name="chat-with-pdf", embedding_functio
 # Init langchain
 llm = ChatOpenAI(api_key=OPENAI_API_KEY)
 prompt = ChatPromptTemplate.from_template("""
-Answer the following questions based on the provided context. Think step by step before providing a detailed answer.If you don't find any related information in the context, please answer "Your provided context doesn't contain any related information".
+Based on the provided context only, find the best answer for my question. Format the answer in markdown format
 <context>
 {context}
 </context>
 Question:{input}
 """)
+# prompt2 = hub.pull("langchain-ai/rag-document-relevance")
 document_chain = create_stuff_documents_chain(llm, prompt)
 retriever = db.as_retriever()
 retriever_chain = create_retrieval_chain(retriever, document_chain)
@@ -74,7 +75,7 @@ def add_files(uploaded_files):
         pages = loader.load()
 
         # Step 2: split content in to chunks
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+        text_splitter = RecursiveCharacterTextSplitter(separators="\n",chunk_size=500, chunk_overlap=50)
         chunks = text_splitter.split_documents(pages)
 
         # Step 3: embed chunks into Vector Store
@@ -142,10 +143,12 @@ def main_page():
     chunk_count = collection.count()
     with col1:
         st.write(f"TOTAL CHUNKS:{chunk_count}")
-        if st.session_state.question is not None:
-            relevant_chunk = retriever.invoke(input=st.session_state.question)
-            st.write("RELEVANT CHUNKS:")
-            st.write(relevant_chunk)
+        all_chunks = collection.get()
+        st.write(all_chunks)
+        # if st.session_state.question is not None:
+        #     relevant_chunk = retriever.invoke(input=st.session_state.question)
+        #     st.write("RELEVANT CHUNKS:")
+        #     st.write(relevant_chunk)
     if chunk_count > 0:
         with col2:
             query = st.text_input(label="Question", placeholder="Please ask me anything related to your files",

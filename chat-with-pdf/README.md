@@ -40,6 +40,10 @@ pip install -r requirements.txt
 ```bash
 streamlit run app.py
 ```
+Run the Streamlit App (RAG Version)
+```bash
+streamlit run app-rag.py
+```
 
 
 ### 💰 3. Digging Deeper
