@@ -29,6 +29,10 @@ pip install -r requirements.txt
 3. Get your OpenAI API Key
 
 - Sign up [OpenAI account](https://platform.openai.com/) (or the LLM provider of your choice) and get your API key.
+```python
+# Replace it with your OPENAI API KEY
+OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
+```
 
 4. Run the Streamlit App
 ```bash
