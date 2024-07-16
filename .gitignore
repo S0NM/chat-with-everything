@@ -3,3 +3,5 @@
 */chroma_db
 .*
 /chat-with-image/
+/exports
+/cache

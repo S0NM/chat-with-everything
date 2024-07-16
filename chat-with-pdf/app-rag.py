@@ -142,14 +142,15 @@ def main_page():
     chunk_count = collection.count()
     with col1:
         st.write(f"TOTAL CHUNKS:{chunk_count}")
-        all_chunks = collection.get()
-        st.write(all_chunks)
-        # if st.session_state.question is not None:
-        #     relevant_chunk = retriever.invoke(input=st.session_state.question)
-        #     st.write("RELEVANT CHUNKS:")
-        #     st.write(relevant_chunk)
-    if chunk_count > 0:
-        with col2:
+        if st.session_state.question is not None:
+            relevant_chunk = retriever.invoke(input=st.session_state.question)
+            st.write("RELEVANT CHUNKS:")
+            st.write(relevant_chunk)
+        else:
+            all_chunks = collection.get()
+            st.write(all_chunks)
+    with col2:
+        if chunk_count > 0:
             query = st.text_input(label="Question", placeholder="Please ask me anything related to your files",
                                   value="")
             ask = st.button("Send message", type="primary")
