@@ -9,3 +9,7 @@ atlassian-python-api
 newspaper4k
 youtube-transcript-api
 chromadb
+pandasai
+tiktoken
+crewai
+newspaper4k
