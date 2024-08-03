@@ -12,7 +12,8 @@ Let's Get Started 💪💪💪
 2. 🎬 [Chat with YouTube](chat-with-youtube)
 3. 📚 [Chat with Confluence](chat-with-confluence) 
 4. 📰 [Chat with Google News](chat-with-google-news)
-5. ... To be updated :)
+5. 📊 [Chat with Data](chat-with-data)
+6. 👯 [Chat with Multi Agents](chat-with-multi-agents)
 
 ### 2. How to get started?  🐌
 
