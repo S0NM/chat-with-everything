@@ -14,6 +14,7 @@ Let's Get Started 💪💪💪
 4. 📰 [Chat with Google News](chat-with-google-news)
 5. 📊 [Chat with Data](chat-with-data)
 6. 👯 [Chat with Multi Agents](chat-with-multi-agents)
+7. 📐 [Chat with Diagram Agent](chat-with-diagram-agent)
 
 ### 2. How to get started?  🐌
 
