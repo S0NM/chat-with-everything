@@ -52,8 +52,8 @@ def convert_json(text):
             return response_json
     return None
 
-# Call LLM with Reflexion Pattern
-def invoke_with_reflexion(question,num_loop=3):
+# Call LLM with Iterative Refinement Pattern
+def invoke_with_refinement(question,num_loop=3):
     code = chain.invoke({"question": question})
     print(f"DEBUG:Init:{code}")
 
@@ -72,4 +72,4 @@ def invoke_with_reflexion(question,num_loop=3):
 
 
 # Testing
-invoke_with_reflexion("Build a simple API using Flask")
+invoke_with_refinement("Build a simple API using Flask")
