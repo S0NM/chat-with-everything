@@ -9,5 +9,5 @@ diagrams
 matplotlib
 pandas
 requests
-gnews
 newspaper4k
+gnews
