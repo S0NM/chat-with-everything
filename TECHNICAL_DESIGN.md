@@ -1096,44 +1096,471 @@ else:
 
 This advanced RAG implementation represents a significant evolution from basic document Q&A, demonstrating production-ready patterns that can handle real-world document processing requirements while maintaining excellent user experience and system performance.
 
-### 2. Multi-Agent Coordination
+### 2. Advanced Multi-Agent System Architecture
 
-#### CrewAI Implementation Pattern
+#### Comprehensive Analysis of CrewAI Framework Implementation
 
-##### Agent Definition
+The multi-agent system in `/home/daytona/chat-with-everything/chat-with-multi-agents/` represents a sophisticated implementation of collaborative AI agents using the CrewAI framework. This system demonstrates advanced patterns for agent coordination, tool integration, and sequential task processing to create a complete newsletter generation workflow.
+
+#### Multi-Agent Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                Multi-Agent Newsletter System                │
+├─────────────────────────────────────────────────────────────┤
+│  User Input: Topic                                          │
+│                           ↓                                 │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │                 Agent Orchestration                     │ │
+│  │  ┌─────────────┬─────────────┬─────────────────────────┐ │ │
+│  │  │ Search      │ Download    │ Newsletter              │ │ │
+│  │  │ Agent       │ Agent       │ Agent                   │ │ │
+│  │  │             │             │                         │ │ │
+│  │  │ Tools:      │ Tools:      │ Tools:                  │ │ │
+│  │  │ SearchTools │ BrowserTools│ NewsletterTools         │ │ │
+│  │  └─────────────┴─────────────┴─────────────────────────┘ │ │
+│  └─────────────────────────────────────────────────────────┘ │
+│                           ↓                                 │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │              Sequential Task Processing                 │ │
+│  │  Task 1: Search → Task 2: Download → Task 3: Newsletter │ │
+│  │     ↓              ↓                    ↓               │ │
+│  │   URLs         Summaries           Final Newsletter     │ │
+│  └─────────────────────────────────────────────────────────┘ │
+│                           ↓                                 │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │            Streamlit Chat Interface                     │ │
+│  │         (Real-time Agent Communication)                 │ │
+│  └─────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Agent Architecture and Coordination Patterns
+
+##### 1. Agent Definition and Specialization
+
+The system implements three specialized agents, each with distinct roles, capabilities, and tools:
+
 ```python
-agent = Agent(
-    role='Specific Role',
-    goal='Clear objective',
-    backstory='Context and expertise',
-    tools=[tool1, tool2],
-    callbacks=[custom_handler],
+# Search Agent - Information Discovery
+search_agent = Agent(
+    role='Search Agent',
+    goal="Search for the latest news about the topic {topic}",
+    backstory="You are an expert at searching for information on the internet and always keep up with the latest news.",
     memory=True,
-    verbose=True
+    verbose=True,
+    tools=[SearchTools.search_internet],
+    callbacks=[MyCustomHandler("SearchAgent")]
+)
+
+# Download Agent - Content Processing
+download_agent = Agent(
+    role='Download Agent',
+    goal='Download and summarize content from a list of URLs',
+    backstory='You are an expert at browsing the internet, downloading content from URLs, and summarizing the content.',
+    callbacks=[MyCustomHandler("DownloadAgent")],
+    memory=True,
+    verbose=True,
+    tools=[BrowserTools.using_newspaper4k_scrape_and_summarize_website]
+)
+
+# Newsletter Agent - Content Aggregation
+newsletter_agent = Agent(
+    role='Newsletter Agent',
+    goal='Create a newsletter aggregating news from a list of article summaries',
+    backstory='You are an expert at aggregating news and creating engaging and easy-to-read newsletters.',
+    callbacks=[MyCustomHandler("NewsletterAgent")],
+    memory=True,
+    verbose=True,
+    tools=[NewsletterTools.create_newsletter]
 )
 ```
 
-##### Task Definition
+**Agent Specialization Analysis:**
+
+1. **Role-Based Design**: Each agent has a specific, well-defined role in the workflow
+2. **Goal-Oriented Configuration**: Clear objectives that align with workflow stages
+3. **Contextual Backstories**: Provide personality and expertise context for better performance
+4. **Memory Enabled**: All agents maintain conversation context across interactions
+5. **Verbose Logging**: Detailed execution logging for debugging and transparency
+6. **Custom Callbacks**: Streamlit integration for real-time user feedback
+
+##### 2. Tool Integration Architecture
+
+Each agent is equipped with specialized tools that enable specific capabilities:
+
+###### SearchTools Implementation (`search_tools.py`)
+
 ```python
-task = Task(
-    description='Detailed task description',
-    expected_output='Output format specification',
-    agent=assigned_agent,
-    context=[dependent_tasks]  # Task dependencies
+class SearchTools():
+    @tool("search_internet")
+    def search_internet(query):
+        """Useful to search the internet about a given topic and return relevant results"""
+        top_result_to_return = 5
+        
+        try:
+            url = "https://google.serper.dev/search"
+            payload = json.dumps({"q": query})
+            headers = {
+                'X-API-KEY': os.environ['SERPER_API_KEY'],
+                'content-type': 'application/json'
+            }
+            response = requests.request("POST", url, headers=headers, data=payload)
+            
+            if 'organic' not in response.json():
+                return "Sorry, I couldn't find anything about that, there could be an error with you serper api key."
+            else:
+                results = response.json()['organic']
+                string = []
+                for result in results[:top_result_to_return]:
+                    try:
+                        string.append('\n'.join([
+                            f"Title: {result['title']}", 
+                            f"Link: {result['link']}",
+                            f"Snippet: {result['snippet']}", 
+                            "\n-----------------"
+                        ]))
+                    except KeyError:
+                        next
+                return '\n'.join(string)
+        except Exception as e:
+            return f"SearchTools:Exception:{e}"
+```
+
+**SearchTools Features:**
+- **External API Integration**: Uses Serper API for Google search functionality
+- **Structured Output**: Returns formatted results with title, link, and snippet
+- **Error Handling**: Graceful degradation with informative error messages
+- **Result Limiting**: Configurable result count (default: 5) for performance
+- **Data Validation**: Checks for required response fields before processing
+
+###### BrowserTools Implementation (`browser_tools.py`)
+
+```python
+class BrowserTools():
+    @tool("using_newspaper4k_scrape_and_summarize_website")
+    def using_newspaper4k_scrape_and_summarize_website(website):
+        """Useful to scrape and summarize a website content"""
+        try:
+            # URL extraction logic with multiple parsing strategies
+            link = ""
+            if isinstance(website, dict):
+                link = website.get("website")["title"]
+            else:
+                # Pattern matching for URL extraction
+                pattern = r'"website":\s*"([^"]+)"'
+                match = re.search(pattern, website)
+                if match:
+                    link = match.group(1)
+                else:
+                    url_pattern = r'https?://[^\s<>"]+|www\.[^\s<>"]+'
+                    url_match = re.match(url_pattern, website)
+                    if url_match:
+                        link = website
+
+            # Content extraction using Newspaper4k
+            article = newspaper.article(link)
+            content = f"Title: {article.title}. Content: {article.text}"
+
+            # Dynamic agent creation for summarization
+            summary_agent = Agent(
+                role='Summary Agent',
+                goal='Summarize the following content in less than 150 words: {content}',
+                backstory="You are an assistant of a famous CEO",
+                allow_delegation=False,
+            )
+
+            summary_task = Task(
+                description="Summarize the following content in less than 150 words: {content}",
+                expected_output=" A summary",
+                agent=summary_agent,
+            )
+
+            # Mini-crew for content summarization
+            crew = Crew(
+                agents=[summary_agent],
+                tasks=[summary_task],
+            )
+            result = crew.kickoff(inputs={"content": content})
+            return result
+        except Exception as e:
+            return f"BrowserTools:Exception:{e}"
+```
+
+**BrowserTools Advanced Features:**
+- **Flexible URL Parsing**: Multiple strategies for extracting URLs from various input formats
+- **Content Extraction**: Uses Newspaper4k library for robust web scraping
+- **Dynamic Agent Creation**: Creates specialized summarization agents on-demand
+- **Mini-Crew Pattern**: Implements crew-within-crew for specialized tasks
+- **Content Length Control**: Enforces 150-word summary limit for consistency
+
+###### NewsletterTools Implementation (`newsletter_tool.py`)
+
+```python
+class NewsletterTools():
+    @tool("create_newsletter")
+    def create_newsletter(summaries):
+        """Useful when creating a newsletter aggregating all the summary contents"""
+        try:
+            newsletter = ""
+            for summary in summaries:
+                title = summary['title']
+                content = summary['description'][:150]  # Limit to 150 words
+                newsletter += f"Title: {title}\nContent: {content}\n\n"
+            return newsletter
+        except Exception as e:
+            return f"NewsletterTools:Exception:{e}"
+```
+
+**NewsletterTools Features:**
+- **Content Aggregation**: Combines multiple summaries into cohesive newsletter
+- **Format Standardization**: Consistent title/content structure
+- **Length Management**: Enforces content length limits for readability
+- **Error Resilience**: Handles malformed input gracefully
+
+#### Sequential Task Processing Workflow
+
+##### Task Definition and Dependencies
+
+```python
+# Task 1: Search for relevant URLs
+search_task = Task(
+    description="Search and return a list of URLs related to the topic: {topic}.",
+    expected_output='List of URLs.',
+    agent=search_agent,
+)
+
+# Task 2: Process URLs and create summaries
+download_task = Task(
+    description="Download content from each URL in the list and summarize the main content of each URL",
+    expected_output='A summary of the main content of URL',
+    agent=download_agent,
+    context=[search_task]  # Depends on search_task output
+)
+
+# Task 3: Create final newsletter
+create_newsletter_task = Task(
+    description="Create a newsletter from a list of article summaries and the URL list",
+    expected_output='A newsletter aggregating articles including a title and brief description.',
+    context=[search_task, download_task],  # Depends on both previous tasks
+    agent=newsletter_agent,
 )
 ```
 
-##### Crew Orchestration
+**Task Coordination Features:**
+- **Sequential Dependencies**: Each task builds on previous task outputs
+- **Context Passing**: Automatic data flow between dependent tasks
+- **Clear Specifications**: Detailed descriptions and expected outputs
+- **Agent Assignment**: Each task assigned to specialized agent
+
+##### Crew Orchestration and Execution
+
+```python
+def main_page():
+    st.title("💬 CrewAI: Creating a newsletter")
+    
+    agents = [search_agent, download_agent, newsletter_agent]
+    tasks = [search_task, download_task, create_newsletter_task]
+    
+    if prompt := st.chat_input():
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        st.chat_message("user").write(prompt)
+        
+        # Crew creation and execution
+        crew = Crew(
+            agents=agents,
+            tasks=tasks,
+            process=Process.sequential,  # Sequential execution
+            manager_llm=llm,            # LLM for coordination
+            output_log_file="crewai.log", # Detailed logging
+        )
+        
+        final = crew.kickoff(inputs={"topic": prompt})
+```
+
+**Orchestration Features:**
+- **Sequential Processing**: `Process.sequential` ensures ordered execution
+- **Manager LLM**: Uses ChatOpenAI for intelligent task coordination
+- **Comprehensive Logging**: Detailed execution logs in `crewai.log`
+- **Input Propagation**: User topic flows through entire workflow
+
+#### Advanced Integration Patterns
+
+##### 1. Streamlit Integration with Custom Callbacks
+
+```python
+class MyCustomHandler(BaseCallbackHandler):
+    def __init__(self, agent_name: str) -> None:
+        self.agent_name = agent_name
+
+    def on_chain_start(self, serialized: Dict[str, Any], inputs: Dict[str, Any], **kwargs: Any) -> None:
+        # Optional debug information (commented out for cleaner UI)
+        pass
+
+    def on_chain_end(self, outputs: Dict[str, Any], **kwargs: Any) -> None:
+        """Display agent output in Streamlit chat interface"""
+        st.session_state.messages.append({
+            "role": self.agent_name, 
+            "content": outputs['output']
+        })
+        st.chat_message(
+            self.agent_name, 
+            avatar=avatars[self.agent_name]
+        ).write(outputs['output'])
+```
+
+**Integration Benefits:**
+- **Real-time Feedback**: Users see agent progress in real-time
+- **Visual Differentiation**: Each agent has unique avatar and styling
+- **Message Persistence**: Agent communications stored in session state
+- **Clean Interface**: Optional debug information for development
+
+##### 2. Avatar and Visual Identity System
+
+```python
+avatars = {
+    "SearchAgent": "https://cdn-icons-png.flaticon.com/512/10885/10885144.png",
+    "DownloadAgent": "https://cdn-icons-png.flaticon.com/512/4021/4021729.png",
+    "NewsletterAgent": "https://cdn-icons-png.flaticon.com/512/5822/5822082.png"
+}
+```
+
+**Visual Design Features:**
+- **Agent Identification**: Unique avatars for each agent role
+- **Consistent Branding**: Professional icon set from Flaticon
+- **User Experience**: Clear visual distinction between agent communications
+
+#### Workflow Execution Analysis
+
+##### Complete Newsletter Generation Process
+
+1. **User Input Phase**
+   ```
+   User Topic → Streamlit Chat Input → Session State Storage
+   ```
+
+2. **Agent Coordination Phase**
+   ```
+   Topic → Search Agent → URL List → Download Agent → Summaries → Newsletter Agent → Final Newsletter
+   ```
+
+3. **Real-time Communication Phase**
+   ```
+   Each Agent → Custom Callback → Streamlit Chat Interface → User Feedback
+   ```
+
+##### Data Flow Through the System
+
+```
+Input: "AI developments"
+    ↓
+Search Agent: 
+    - Uses SearchTools.search_internet()
+    - Queries Serper API
+    - Returns: List of relevant URLs with titles and snippets
+    ↓
+Download Agent:
+    - Receives URL list from search_task context
+    - Uses BrowserTools.using_newspaper4k_scrape_and_summarize_website()
+    - For each URL: Scrapes content → Creates summary agent → Generates summary
+    - Returns: Collection of article summaries
+    ↓
+Newsletter Agent:
+    - Receives summaries from download_task context
+    - Receives original URLs from search_task context
+    - Uses NewsletterTools.create_newsletter()
+    - Aggregates summaries into formatted newsletter
+    - Returns: Complete newsletter with titles and descriptions
+```
+
+#### Advanced Multi-Agent Features
+
+##### 1. Memory and Context Management
+
+```python
+# All agents configured with memory=True
+memory=True,
+verbose=True,
+```
+
+**Memory Benefits:**
+- **Conversation Continuity**: Agents remember previous interactions
+- **Context Awareness**: Better decision-making based on history
+- **Learning Capability**: Improved performance over time
+
+##### 2. Error Handling and Resilience
+
+```python
+# Tool-level error handling
+try:
+    # Tool execution logic
+    return successful_result
+except Exception as e:
+    return f"ToolName:Exception:{e}"
+```
+
+**Resilience Features:**
+- **Graceful Degradation**: Tools handle errors without breaking workflow
+- **Informative Errors**: Clear error messages for debugging
+- **Workflow Continuity**: Errors in one tool don't stop entire process
+
+##### 3. Logging and Observability
+
 ```python
 crew = Crew(
-    agents=[agent1, agent2, agent3],
-    tasks=[task1, task2, task3],
+    agents=agents,
+    tasks=tasks,
     process=Process.sequential,
-    manager_llm=llm
+    manager_llm=llm,
+    output_log_file="crewai.log",  # Comprehensive logging
 )
-
-result = crew.kickoff(inputs={"topic": user_input})
 ```
+
+**Observability Features:**
+- **Detailed Logging**: Complete execution trace in log files
+- **Debug Information**: Print statements for development
+- **Performance Monitoring**: Execution time and resource usage tracking
+
+#### Technical Advantages of Multi-Agent Architecture
+
+1. **Modularity**: Each agent handles specific domain expertise
+2. **Scalability**: Easy to add new agents or modify existing ones
+3. **Maintainability**: Clear separation of concerns and responsibilities
+4. **Flexibility**: Agents can be recombined for different workflows
+5. **Robustness**: Distributed processing with error isolation
+6. **User Experience**: Real-time feedback and transparent processing
+
+#### Comparison with Single-Agent Approaches
+
+| Feature | Single Agent | Multi-Agent CrewAI |
+|---------|--------------|-------------------|
+| Task Specialization | Generic capabilities | Domain-specific expertise |
+| Error Isolation | Single point of failure | Distributed error handling |
+| Scalability | Limited by single context | Horizontal scaling with agents |
+| Maintainability | Monolithic structure | Modular, maintainable components |
+| User Feedback | Batch processing | Real-time agent communication |
+| Tool Integration | Centralized tool access | Specialized tool assignment |
+| Workflow Flexibility | Fixed processing order | Configurable task dependencies |
+| Development Complexity | Simple single-agent logic | Sophisticated orchestration |
+
+#### Production Considerations
+
+##### 1. Performance Optimization
+- **Parallel Processing**: Could be enhanced with `Process.parallel` for independent tasks
+- **Caching**: Tool results could be cached for repeated queries
+- **Rate Limiting**: API calls managed to avoid service limits
+
+##### 2. Scalability Enhancements
+- **Agent Pool Management**: Dynamic agent creation based on workload
+- **Task Queue System**: Handling multiple concurrent requests
+- **Resource Management**: Memory and CPU optimization for large-scale deployment
+
+##### 3. Monitoring and Analytics
+- **Performance Metrics**: Task execution times and success rates
+- **Quality Metrics**: Output quality assessment and improvement
+- **User Analytics**: Usage patterns and feature adoption
+
+This multi-agent system demonstrates a sophisticated approach to collaborative AI, showcasing how specialized agents can work together to accomplish complex tasks while providing transparent, real-time feedback to users through an intuitive chat interface.
 
 ### 3. Structured Output Parsing
 
@@ -1521,5 +1948,6 @@ The "Chat with Everything" project represents a comprehensive exploration of LLM
 5. **Production Features**: Authentication, logging, and monitoring
 
 This technical design document serves as both a comprehensive guide to understanding the current implementation and a roadmap for future enhancements and extensions.
+
 
 
